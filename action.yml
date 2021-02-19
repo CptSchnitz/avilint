@@ -5,6 +5,10 @@ inputs:
   github_token:
     description: The GITHUB_TOKEN secret
     required: true
+  globs:
+    description: comma seperated glob of files to run on
+    required: false
+    default: '**/*.js,**/*.ts'
 runs:
   using: 'node12'
   main: 'dist/index.js'
