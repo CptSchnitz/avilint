@@ -1,19 +1,35 @@
-import * as core from '@actions/core'
-import {wait} from './wait'
+// /* eslint-disable no-undef */
+import * as core from '@actions/core';
+import { context, getOctokit } from '@actions/github';
+import * as glob from '@actions/glob';
 
 async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    core.setFailed(error.message)
+  const pr = context.payload.pull_request;
+  if (!pr) {
+    core.setFailed('github.context.payload.pull_request not exist');
+    return;
   }
+
+  const octoKit = getOctokit(core.getInput('GITHUB_TOKEN'));
+
+  // Get owner and repo from context
+  const owner = context.repo.owner;
+  const repo = context.repo.repo;
+  const pattern = '**/*.js';
+  const globber = await glob.create(pattern);
+  const files = await globber.glob();
+
+  // Create a comment on PR
+  // https://octokit.github.io/rest.js/#octokit-routes-issues-create-comment
+  const response = await octoKit.issues.createComment({
+    owner,
+    repo,
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    issue_number: pr.number,
+    body: files.join('\n')
+  });
+  core.debug(`created comment URL: ${response.data.html_url}`);
+  core.debug('Wrote a comment successfully');
 }
 
-run()
+run().catch(() => {core.setFailed(':(')});
