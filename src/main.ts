@@ -1,4 +1,4 @@
-// /* eslint-disable no-undef */
+/* eslint-disable no-undef */
 import * as core from '@actions/core';
 import {context, getOctokit} from '@actions/github';
 import * as glob from '@actions/glob';
@@ -17,13 +17,14 @@ async function run(): Promise<void> {
   const owner = context.repo.owner;
   const repo = context.repo.repo;
   const patterns = core.getInput('GLOBS').split(',').join('\n');
+  core.debug(`pattern ares: ${patterns}`);
   const globber = await glob.create(patterns);
   const files = await globber.glob();
   // for await (const file of globber.globGenerator()) {
-
   // }
   const regex = new RegExp(/^\/\* eslint-disable (?<avi>.*) \*\/$/, 'g');
   const promises = files.map(async file => {
+    core.debug(`working on ${file}`);
     const content = (await fsPromises.readFile(file)).toString();
     let array: RegExpExecArray | null;
     const result: string[] = [];
@@ -34,13 +35,14 @@ async function run(): Promise<void> {
       }
       result.push(array.groups['avi']);
     }
+    core.debug(`rules are ${result}`);
     return {file, rules: result};
   });
 
   const content = (await Promise.all(promises))
     .filter(m => m.rules.length > 0)
     .map(m => [m.file, m.rules.join(',')]);
-
+  core.debug(JSON.stringify(content));
   const res = table([['file', 'rules'], ...content]);
 
   // Create a comment on PR

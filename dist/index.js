@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-// /* eslint-disable no-undef */
+/* eslint-disable no-undef */
 const core = __importStar(__webpack_require__(2186));
 const github_1 = __webpack_require__(5438);
 const glob = __importStar(__webpack_require__(8090));
@@ -57,12 +57,14 @@ function run() {
         const owner = github_1.context.repo.owner;
         const repo = github_1.context.repo.repo;
         const patterns = core.getInput('GLOBS').split(',').join('\n');
+        core.debug(`pattern ares: ${patterns}`);
         const globber = yield glob.create(patterns);
         const files = yield globber.glob();
         // for await (const file of globber.globGenerator()) {
         // }
         const regex = new RegExp(/^\/\* eslint-disable (?<avi>.*) \*\/$/, 'g');
         const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
+            core.debug(`working on ${file}`);
             const content = (yield fs_1.promises.readFile(file)).toString();
             let array;
             const result = [];
@@ -72,11 +74,13 @@ function run() {
                 }
                 result.push(array.groups['avi']);
             }
+            core.debug(`rules are ${result}`);
             return { file, rules: result };
         }));
         const content = (yield Promise.all(promises))
             .filter(m => m.rules.length > 0)
             .map(m => [m.file, m.rules.join(',')]);
+        core.debug(JSON.stringify(content));
         const res = markdown_table_1.default([['file', 'rules'], ...content]);
         // Create a comment on PR
         // https://octokit.github.io/rest.js/#octokit-routes-issues-create-comment
