@@ -43,7 +43,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
 const github_1 = __webpack_require__(5438);
 const glob = __importStar(__webpack_require__(8090));
-const promises_1 = __webpack_require__(9225);
+const fs_1 = __webpack_require__(5747);
 const markdown_table_1 = __importDefault(__webpack_require__(1062));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -63,7 +63,7 @@ function run() {
         // }
         const regex = new RegExp(/^\/\* eslint-disable (?<avi>.*) \*\/$/, 'g');
         const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
-            const content = (yield promises_1.readFile(file)).toString();
+            const content = (yield fs_1.promises.readFile(file)).toString();
             let array;
             const result = [];
             while ((array = regex.exec(content))) {
@@ -8507,14 +8507,6 @@ module.exports = require("events");;
 
 "use strict";
 module.exports = require("fs");;
-
-/***/ }),
-
-/***/ 9225:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs/promises");;
 
 /***/ }),
 

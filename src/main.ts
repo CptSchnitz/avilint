@@ -2,7 +2,7 @@
 import * as core from '@actions/core';
 import {context, getOctokit} from '@actions/github';
 import * as glob from '@actions/glob';
-import {readFile} from 'fs/promises';
+import {promises as fsPromises} from 'fs';
 import table from 'markdown-table';
 
 async function run(): Promise<void> {
@@ -13,7 +13,6 @@ async function run(): Promise<void> {
   }
 
   const octoKit = getOctokit(core.getInput('GITHUB_TOKEN'));
-
   // Get owner and repo from context
   const owner = context.repo.owner;
   const repo = context.repo.repo;
@@ -25,7 +24,7 @@ async function run(): Promise<void> {
   // }
   const regex = new RegExp(/^\/\* eslint-disable (?<avi>.*) \*\/$/, 'g');
   const promises = files.map(async file => {
-    const content = (await readFile(file)).toString();
+    const content = (await fsPromises.readFile(file)).toString();
     let array: RegExpExecArray | null;
     const result: string[] = [];
 
